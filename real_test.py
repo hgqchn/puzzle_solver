@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import cv2
 import numpy as np
@@ -31,40 +32,39 @@ if __name__=="__main__":
     binary_bgr=binary.copy()
     binary_bgr=cv2.cvtColor(binary_bgr, cv2.COLOR_GRAY2BGR)
 
+    pieces_bound=[]
+    offset = 10
     for contour in contours:
         x,y,w,h=cv2.boundingRect(contour)
-        offset=10
         x=max(x-offset, 0)
         y=max(y-offset, 0)
         w=min(w+2*offset, binary_bgr.shape[1]-x)
         h=min(h+2*offset, binary_bgr.shape[0]-y)
         cv2.rectangle(binary_bgr, (x, y), (x + w, y + h), (0, 255, 0), 10)
+        pieces_bound.append((x,y,w,h))
+    # 对包围框排序，按照网格形式赋予序号
+    sort_height_bias=0
+    sort_height_delta=1000
+    sort_width_bias=400
+    sort_width_delta=1000
+    pieces_bound.sort(key=lambda x: ((x[1]-sort_width_bias)//sort_height_delta, (x[0]-sort_width_bias)//sort_width_delta))
+    for bound in pieces_bound:
+        x,y,w,h=bound
         piece=binary[y:y+h,x:x+w]
         piece_obj=utils.Piece(piece)
         cv2.putText(binary_bgr, f"{piece_obj.id}", (x+w//2, y+h//2), cv2.FONT_HERSHEY_SIMPLEX, 5,thickness=10, color=(0,0,255))
         pieces.append(piece_obj)
-    #utils.show_img("thresh1", binary_bgr)
+    utils.show_img("all_pieces", binary_bgr)
+    piece1=pieces[0]
+    piece2=pieces[1]
+    piece3=pieces[2]
 
-    timer=utils.Timer()
-    piece0=pieces[0]
-    image=piece0.binary
-    image = cv2.GaussianBlur(image, (5,5), 0)
-    timer.start()
-    corners = cv2.goodFeaturesToTrack(image, maxCorners=0, qualityLevel=0.03, minDistance=10,blockSize=5)
-    corners = corners.astype(np.int32)
-    timer.stop()
-    print(f"corners detection time: {timer.get_last():.3f} seconds")
-    timer.start()
-    rect_corners, s1, s2 = utils.corners_filter(corners)
-    timer.stop()
-    print(f"corners filtering time: {timer.get_last():.3f} seconds")
-    cv2.imshow("pieces", piece0.show_corners(corners))
-    cv2.imshow("pieces1", piece0.show_corners(rect_corners))
-    #piece0.get_corners()
-
-    #cv2.imshow("pieces", piece0.show_corners(piece0.corners))
-
-
+    tik=time.perf_counter()
+    piece1.get_rect_corners()
+    print("get_rect_corners cost: {:.6f}s".format(time.perf_counter()-tik))
+    piece1.piece_rotate_vertical()
+    edge_label=piece1.get_edges()
+    cv2.imshow("edge_label", edge_label)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
