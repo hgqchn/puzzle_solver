@@ -16,8 +16,9 @@ if __name__=="__main__":
     img=r'D:\Users\hgq\Pictures\test\real.jpeg'
     img = cv2.imread(img)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.medianBlur(gray, ksize=5)
-    thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)[1]
+    #gray = cv2.medianBlur(gray, ksize=5)
+    gray=cv2.bilateralFilter(gray, 15, 75,75)
+    thresh = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY)[1]
     thresh = cv2.blur(thresh, ksize=(5, 5))
 
     #handler1=utils.window_handler("thresh",thresh)
@@ -60,10 +61,7 @@ if __name__=="__main__":
     #utils.show_img("all_pieces", binary_bgr)
     cv2.imwrite(os.path.join(img_save_path, "all_pieces.jpg"), binary_bgr)
 
-    # piece=pieces[0]
-    # piece.get_corners()
-    # cv2.imshow("corners",piece.show_all_corners())
-    #piece.get_rect_corners()
+
 
     process_time=[]
     with tqdm(total=len(pieces),file=sys.stdout) as pbar:

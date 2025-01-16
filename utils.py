@@ -454,10 +454,10 @@ def get_edge_label(img, edge_points, corner_points):
 
 def show_edge_label(mask):
     show = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
-    show[mask == 1] = (255, 0, 0)
-    show[mask == 2] = (0, 255, 0)
-    show[mask == 3] = (0, 0, 255)
-    show[mask == 4] = (255, 255, 0)
+    show[mask == 1] = (255, 0, 0) #蓝色 1
+    show[mask == 2] = (0, 255, 0) #绿色 2
+    show[mask == 3] = (0, 0, 255) #红色 3
+    show[mask == 4] = (0, 255, 255) #黄色 4
     show[mask == 5] = (255, 255, 255)  # 未标记为四条边之一
     return show
 
